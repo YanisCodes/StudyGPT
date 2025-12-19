@@ -37,4 +37,4 @@ StudyGPT is an intelligent Flutter application designed to structure your learni
    ```
 
 ---
-*Developed with ❤️ for students, by students.*
+*Developed with ❤️ for students, by a student 
