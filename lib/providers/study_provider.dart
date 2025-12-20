@@ -38,10 +38,26 @@ class StudyProvider with ChangeNotifier {
   StudyProvider() {
     _loadSessions();
     _loadModules();
+    _loadTargetHours();
   }
 
   void setTargetHours(double hours) {
     _targetHours = hours;
+    _storageService.saveTargetHours(hours);
+    notifyListeners();
+  }
+
+  Future<void> _loadTargetHours() async {
+    _targetHours = await _storageService.getTargetHours();
+    notifyListeners();
+  }
+
+  Future<void> clearData() async {
+    await _storageService.clearAll();
+    _sessions.clear();
+    _modules.clear();
+    _selectedModule = null;
+    _targetHours = 4.0;
     notifyListeners();
   }
 

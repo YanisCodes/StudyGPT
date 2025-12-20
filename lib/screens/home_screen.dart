@@ -7,6 +7,7 @@ import '../widgets/dashboard_widgets.dart';
 import 'modules_screen.dart';
 import 'session_setup_screen.dart';
 import 'stats_detail_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const DashboardView(),
     const ModulesScreen(),
+    const SettingsScreen(),
   ];
 
   @override
@@ -48,6 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.list_alt_rounded),
             label: 'Modules',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_rounded),
+            label: 'Settings',
           ),
         ],
       ),
