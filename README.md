@@ -23,7 +23,7 @@ StudyGPT is an intelligent Flutter application designed to structure your learni
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/StudyGPT.git
+   git clone https://github.com/YanisCodes/StudyGPT.git
    ```
 
 2. **Install dependencies**
@@ -37,4 +37,4 @@ StudyGPT is an intelligent Flutter application designed to structure your learni
    ```
 
 ---
-*Developed with ❤️ for students, by students.*
+*Developed with ❤️ for students, by a student 
