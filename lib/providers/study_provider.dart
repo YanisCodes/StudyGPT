@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/study_session.dart';
+import '../models/achievement.dart';
 import '../services/storage_service.dart';
 
 class StudyProvider with ChangeNotifier {
@@ -21,6 +22,44 @@ class StudyProvider with ChangeNotifier {
   // Data State
   List<StudySession> _sessions = [];
   double _targetHours = 4.0;
+  int _xp = 0;
+  List<Achievement> _achievements = [
+    Achievement(
+      id: 'first_session',
+      title: 'First Step',
+      description: 'Complete your first study session',
+      icon: Icons.flag,
+      color: Colors.blueAccent,
+    ),
+    Achievement(
+      id: 'marathon',
+      title: 'Marathoner',
+      description: 'Study for 4 hours in a single day',
+      icon: Icons.directions_run,
+      color: Colors.orangeAccent,
+    ),
+    Achievement(
+      id: 'night_owl',
+      title: 'Night Owl',
+      description: 'Complete a session after 10 PM',
+      icon: Icons.nightlight_round,
+      color: Colors.purpleAccent,
+    ),
+    Achievement(
+      id: 'early_bird',
+      title: 'Early Bird',
+      description: 'Complete a session before 8 AM',
+      icon: Icons.wb_sunny,
+      color: Colors.amber,
+    ),
+    Achievement(
+      id: 'dedicated',
+      title: 'Dedicated',
+      description: 'Reach Level 5',
+      icon: Icons.military_tech,
+      color: Colors.redAccent,
+    ),
+  ];
 
   // Getters
   double get fatigue => _fatigue;
@@ -32,6 +71,11 @@ class StudyProvider with ChangeNotifier {
   bool get isBreak => _isBreak;
   List<StudySession> get sessions => _sessions;
   double get targetHours => _targetHours;
+  int get xp => _xp;
+  int get level => (_xp / 60).floor() + 1;
+  int get xpForNextLevel => (level * 60);
+  int get xpInCurrentLevel => _xp % 60;
+  List<Achievement> get achievements => _achievements;
 
   double get progress => _initialDuration == 0 ? 0 : 1 - (_secondsRemaining / _initialDuration);
 
@@ -39,6 +83,9 @@ class StudyProvider with ChangeNotifier {
     _loadSessions();
     _loadModules();
     _loadTargetHours();
+    _loadXP();
+    // We should load unlocked achievements status here too, but for simplicity we'll recalculate or mock for now
+    // In a real app, we'd save unlocked IDs to storage.
   }
 
   void setTargetHours(double hours) {
@@ -52,12 +99,18 @@ class StudyProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _loadXP() async {
+    _xp = await _storageService.getXP();
+    notifyListeners();
+  }
+
   Future<void> clearData() async {
     await _storageService.clearAll();
     _sessions.clear();
     _modules.clear();
     _selectedModule = null;
     _targetHours = 4.0;
+    _xp = 0;
     notifyListeners();
   }
 
@@ -149,22 +202,74 @@ class StudyProvider with ChangeNotifier {
   void _completeTimer() {
     _timer?.cancel();
     _isRunning = false;
-    
+    notifyListeners();
+  }
+
+  Future<void> saveSessionWithNotes(String? notes) async {
     if (!_isBreak && _selectedModule != null) {
+      // Calculate XP (1 XP per minute)
+      int earnedXP = (_initialDuration / 60).round();
+      _xp += earnedXP;
+      await _storageService.saveXP(_xp);
+
       // Save study session
       final session = StudySession(
         moduleName: _selectedModule!,
         durationInSeconds: _initialDuration,
         date: DateTime.now(),
+        notes: notes,
+        xpEarned: earnedXP,
       );
       _saveSession(session);
+      _checkAchievements();
     }
-    
+  }
+
+  void _checkAchievements() {
+    // Simple check logic
+    List<Achievement> updated = [];
+    for (var a in _achievements) {
+      bool unlocked = a.isUnlocked;
+      double progress = a.progress;
+
+      if (a.id == 'first_session' && _sessions.isNotEmpty) {
+        unlocked = true;
+        progress = 1.0;
+      } else if (a.id == 'marathon') {
+        if (hoursStudiedToday >= 4.0) {
+          unlocked = true;
+          progress = 1.0;
+        } else {
+          progress = hoursStudiedToday / 4.0;
+        }
+      } else if (a.id == 'night_owl') {
+        if (_sessions.any((s) => s.date.hour >= 22)) {
+          unlocked = true;
+          progress = 1.0;
+        }
+      } else if (a.id == 'early_bird') {
+        if (_sessions.any((s) => s.date.hour < 8)) {
+          unlocked = true;
+          progress = 1.0;
+        }
+      } else if (a.id == 'dedicated') {
+        if (level >= 5) {
+          unlocked = true;
+          progress = 1.0;
+        } else {
+          progress = level / 5.0;
+        }
+      }
+
+      updated.add(a.copyWith(isUnlocked: unlocked, progress: progress));
+    }
+    _achievements = updated;
     notifyListeners();
   }
 
   Future<void> _loadSessions() async {
     _sessions = await _storageService.getSessions();
+    _checkAchievements(); // Check on load
     notifyListeners();
   }
 

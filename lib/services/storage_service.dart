@@ -5,6 +5,7 @@ class StorageService {
   static const String _sessionsKey = 'study_sessions';
   static const String _modulesKey = 'study_modules';
   static const String _targetHoursKey = 'target_hours';
+  static const String _xpKey = 'user_xp';
 
   Future<void> saveSession(StudySession session) async {
     final prefs = await SharedPreferences.getInstance();
@@ -37,6 +38,16 @@ class StorageService {
   Future<double> getTargetHours() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getDouble(_targetHoursKey) ?? 4.0;
+  }
+
+  Future<void> saveXP(int xp) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_xpKey, xp);
+  }
+
+  Future<int> getXP() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_xpKey) ?? 0;
   }
 
   Future<void> clearSessions() async {

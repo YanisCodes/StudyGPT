@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/study_provider.dart';
+import 'session_summary_screen.dart';
 
 class SessionScreen extends StatefulWidget {
   const SessionScreen({super.key});
@@ -30,6 +31,18 @@ class _SessionScreenState extends State<SessionScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<StudyProvider>(context);
+
+    // Check for completion
+    if (provider.secondsRemaining == 0 && !provider.isRunning && !provider.isBreak) {
+      // Navigate to summary screen if session finished naturally
+      // We use a microtask to avoid build conflicts
+      Future.microtask(() {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const SessionSummaryScreen()),
+        );
+      });
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),

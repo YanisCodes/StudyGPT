@@ -8,6 +8,7 @@ import 'modules_screen.dart';
 import 'session_setup_screen.dart';
 import 'stats_detail_screen.dart';
 import 'settings_screen.dart';
+import 'achievements_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -82,6 +83,9 @@ class DashboardView extends StatelessWidget {
     final weeklyProgress = provider.last7DaysHours;
     final targetHours = provider.targetHours;
     final focusScore = provider.focusScore;
+    final level = provider.level;
+    final xp = provider.xp;
+    final xpInLevel = provider.xpInCurrentLevel;
     
     // Create spots for the chart
     final List<FlSpot> spots = [];
@@ -102,10 +106,11 @@ class DashboardView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Welcome back,",
+                      "Level $level",
                       style: GoogleFonts.poppins(
-                        color: Colors.grey,
+                        color: Colors.deepPurpleAccent,
                         fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
@@ -118,9 +123,24 @@ class DashboardView extends StatelessWidget {
                     ),
                   ],
                 ),
-                const CircleAvatar(
-                  backgroundColor: Colors.deepPurpleAccent,
-                  child: Text("S", style: TextStyle(color: Colors.white)),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      value: xpInLevel / 60,
+                      backgroundColor: Colors.white10,
+                      color: Colors.deepPurpleAccent,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AchievementsScreen()),
+                        );
+                      },
+                      child: const Icon(Icons.emoji_events, color: Colors.amber, size: 20),
+                    ),
+                  ],
                 ),
               ],
             ),
